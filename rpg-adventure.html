@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ashenveil Chronicles</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --panel: #10101a;
+    --border: #2a2040;
+    --gold: #c9a84c;
+    --gold-dim: #7a6030;
+    --red: #c0392b;
+    --green: #27ae60;
+    --blue: #2980b9;
+    --text: #d4c9b0;
+    --text-dim: #7a7060;
+    --magic: #8b5cf6;
+    --magic-dim: #4c2d8a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Crimson Text', serif;
+    font-size: 17px;
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-image: radial-gradient(ellipse at 20% 20%, #1a0a2e 0%, transparent 60%),
+                      radial-gradient(ellipse at 80% 80%, #0d1a0a 0%, transparent 60%);
+  }
+
+  #title-screen, #game-screen {
+    width: 100%;
+    max-width: 860px;
+  }
+
+  /* TITLE SCREEN */
+  #title-screen {
+    text-align: center;
+    animation: fadeIn 1.5s ease;
+  }
+  .title-glow {
+    font-family: 'Cinzel Decorative', cursive;
+    font-size: clamp(28px, 6vw, 52px);
+    color: var(--gold);
+    text-shadow: 0 0 30px rgba(201,168,76,0.5), 0 0 60px rgba(201,168,76,0.2);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+  .title-sub {
+    font-size: 16px;
+    color: var(--text-dim);
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    margin-bottom: 40px;
+  }
+  .title-art {
+    font-size: 72px;
+    margin: 20px 0 30px;
+    filter: drop-shadow(0 0 20px rgba(201,168,76,0.4));
+  }
+  .title-desc {
+    max-width: 520px;
+    margin: 0 auto 40px;
+    color: var(--text-dim);
+    font-style: italic;
+    font-size: 18px;
+    line-height: 1.8;
+  }
+
+  /* GAME SCREEN */
+  #game-screen { display: none; }
+  .game-grid {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    grid-template-rows: auto 1fr auto;
+    gap: 10px;
+    height: 90vh;
+    max-height: 700px;
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(201,168,76,0.03) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .panel-title {
+    font-family: 'Cinzel Decorative', cursive;
+    font-size: 10px;
+    color: var(--gold-dim);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* CHARACTER PANEL */
+  #char-panel { grid-row: 1 / 3; }
+  .char-avatar {
+    text-align: center;
+    font-size: 48px;
+    margin: 10px 0;
+    filter: drop-shadow(0 0 10px rgba(201,168,76,0.3));
+  }
+  .char-name {
+    font-family: 'Cinzel Decorative', cursive;
+    color: var(--gold);
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  .char-class {
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 13px;
+    margin-bottom: 14px;
+    font-style: italic;
+  }
+  .stat-bar { margin-bottom: 8px; }
+  .stat-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    margin-bottom: 3px;
+  }
+  .stat-label span:first-child { color: var(--text-dim); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+  .bar-bg {
+    background: #1a1a28;
+    border-radius: 2px;
+    height: 6px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+  .hp-fill { background: linear-gradient(90deg, #8b1a1a, var(--red)); }
+  .mp-fill { background: linear-gradient(90deg, #2d1a6b, var(--magic)); }
+  .xp-fill { background: linear-gradient(90deg, #1a4a1a, var(--green)); }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 14px;
+  }
+  .stat-box {
+    background: #0d0d18;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 6px;
+    text-align: center;
+  }
+  .stat-box .val { font-size: 18px; color: var(--gold); font-weight: 600; }
+  .stat-box .lbl { font-size: 10px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; }
+
+  .inventory {
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+  .inv-title {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .inv-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .inv-item {
+    background: #0d0d18;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 4px 7px;
+    font-size: 12px;
+    cursor: default;
+    transition: border-color 0.2s;
+    title: '';
+  }
+  .inv-item:hover { border-color: var(--gold-dim); color: var(--gold); }
+
+  /* STORY PANEL */
+  #story-panel {
+    grid-column: 2;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+  }
+  #story-panel::-webkit-scrollbar { width: 4px; }
+  #story-panel::-webkit-scrollbar-track { background: #0d0d18; }
+  #story-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .story-entry {
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(42,32,64,0.5);
+    animation: slideIn 0.4s ease;
+  }
+  .story-entry:last-child { border-bottom: none; }
+  .story-location {
+    font-size: 10px;
+    color: var(--gold-dim);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .story-text { line-height: 1.8; }
+  .story-text em { color: var(--gold); font-style: italic; }
+  .story-text .combat-hit { color: #e74c3c; }
+  .story-text .combat-miss { color: var(--text-dim); }
+  .story-text .loot { color: var(--green); }
+  .story-text .magic { color: var(--magic); }
+  .story-text .death { color: #8b0000; font-style: italic; }
+
+  /* ACTIONS PANEL */
+  #actions-panel {
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .action-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    font-family: 'Crimson Text', serif;
+    font-size: 15px;
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    background: #0d0d18;
+    color: var(--text);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+    flex: 1;
+    min-width: 100px;
+    text-align: center;
+  }
+  .btn:hover:not(:disabled) {
+    background: #1a1a28;
+    border-color: var(--gold-dim);
+    color: var(--gold);
+    transform: translateY(-1px);
+  }
+  .btn:active:not(:disabled) { transform: translateY(0); }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .btn-primary { border-color: var(--gold-dim); color: var(--gold); }
+  .btn-danger { border-color: #5a1a1a; color: #e74c3c; }
+  .btn-magic { border-color: var(--magic-dim); color: var(--magic); }
+
+  /* LOCATION BAR */
+  #location-bar {
+    grid-column: 1 / 3;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+  .loc-name {
+    font-family: 'Cinzel Decorative', cursive;
+    color: var(--gold);
+    font-size: 13px;
+  }
+  .loc-detail { color: var(--text-dim); font-size: 13px; }
+  .loc-level { 
+    font-size: 12px; 
+    color: var(--text-dim); 
+    padding: 3px 10px; 
+    border: 1px solid var(--border); 
+    border-radius: 2px;
+    letter-spacing: 1px;
+  }
+
+  /* COMBAT OVERLAY */
+  #combat-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease;
+  }
+  #combat-overlay.active { display: flex; }
+  .combat-box {
+    background: var(--panel);
+    border: 1px solid var(--gold-dim);
+    border-radius: 6px;
+    padding: 30px;
+    width: 90%;
+    max-width: 520px;
+    box-shadow: 0 0 60px rgba(0,0,0,0.8), 0 0 30px rgba(201,168,76,0.1);
+  }
+  .combat-title {
+    font-family: 'Cinzel Decorative', cursive;
+    color: var(--gold);
+    font-size: 18px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .combatants {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .combatant { text-align: center; flex: 1; }
+  .combatant .emo { font-size: 52px; display: block; margin-bottom: 6px; }
+  .combatant .cname { font-family: 'Cinzel Decorative', cursive; font-size: 12px; color: var(--gold); }
+  .combat-vs { color: var(--text-dim); font-size: 22px; padding: 0 16px; }
+  .combat-log {
+    background: #0a0a12;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 12px;
+    height: 120px;
+    overflow-y: auto;
+    font-size: 15px;
+    margin-bottom: 16px;
+    line-height: 1.7;
+  }
+  .combat-log::-webkit-scrollbar { width: 3px; }
+  .combat-log::-webkit-scrollbar-thumb { background: var(--border); }
+  .combat-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* DEATH / LEVEL UP OVERLAY */
+  #event-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.9);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    animation: fadeIn 0.5s ease;
+  }
+  #event-overlay.active { display: flex; }
+  .event-box {
+    padding: 40px;
+    max-width: 400px;
+  }
+  .event-emoji { font-size: 80px; margin-bottom: 20px; display: block; }
+  .event-title {
+    font-family: 'Cinzel Decorative', cursive;
+    font-size: 28px;
+    margin-bottom: 12px;
+  }
+  .event-title.death { color: #8b0000; text-shadow: 0 0 20px rgba(139,0,0,0.5); }
+  .event-title.levelup { color: var(--gold); text-shadow: 0 0 20px rgba(201,168,76,0.5); }
+  .event-desc { color: var(--text-dim); margin-bottom: 30px; font-size: 18px; line-height: 1.8; }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+  .pulsing { animation: pulse 1.5s infinite; }
+</style>
+</head>
+<body>
+
+<!-- TITLE SCREEN -->
+<div id="title-screen">
+  <div class="title-glow">Ashenveil Chronicles</div>
+  <div class="title-sub">A Journey Through Shadow & Flame</div>
+  <div class="title-art">⚔️</div>
+  <p class="title-desc">The kingdom of Ashenveil has fallen into darkness. Ancient evils stir in forgotten ruins. Monsters roam the land. Only a lone hero dares to venture into the unknown...</p>
+  <div id="class-select" style="margin-bottom:30px;">
+    <p style="color:var(--text-dim);margin-bottom:16px;letter-spacing:2px;font-size:14px;text-transform:uppercase;">Choose Your Path</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <div class="class-card" data-class="warrior" onclick="selectClass(this)">
+        <span style="font-size:36px">⚔️</span>
+        <div style="font-family:'Cinzel Decorative',cursive;color:var(--gold);font-size:12px;margin-top:6px">Warrior</div>
+        <div style="font-size:13px;color:var(--text-dim);margin-top:4px">HP+, STR+</div>
+      </div>
+      <div class="class-card" data-class="mage" onclick="selectClass(this)">
+        <span style="font-size:36px">🔮</span>
+        <div style="font-family:'Cinzel Decorative',cursive;color:var(--gold);font-size:12px;margin-top:6px">Mage</div>
+        <div style="font-size:13px;color:var(--text-dim);margin-top:4px">MP+, INT+</div>
+      </div>
+      <div class="class-card" data-class="rogue" onclick="selectClass(this)">
+        <span style="font-size:36px">🗡️</span>
+        <div style="font-family:'Cinzel Decorative',cursive;color:var(--gold);font-size:12px;margin-top:6px">Rogue</div>
+        <div style="font-size:13px;color:var(--text-dim);margin-top:4px">SPD+, EVA+</div>
+      </div>
+    </div>
+  </div>
+  <button class="btn btn-primary" id="start-btn" style="max-width:200px;margin:0 auto;display:block;font-size:18px;padding:12px 30px;" onclick="startGame()" disabled>Begin Your Quest</button>
+</div>
+
+<style>
+.class-card {
+  background: var(--panel);
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  padding: 16px 24px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+  min-width: 110px;
+}
+.class-card:hover { border-color: var(--gold-dim); transform: translateY(-3px); }
+.class-card.selected { border-color: var(--gold); box-shadow: 0 0 20px rgba(201,168,76,0.2); }
+</style>
+
+<!-- GAME SCREEN -->
+<div id="game-screen">
+  <div class="game-grid">
+    <!-- Location Bar -->
+    <div id="location-bar">
+      <div>
+        <div class="loc-name" id="loc-name">The Crossroads</div>
+        <div class="loc-detail" id="loc-detail">A fork in the ancient road</div>
+      </div>
+      <div class="loc-level" id="loc-level">⚔️ Danger: Mild</div>
+    </div>
+
+    <!-- Character Panel -->
+    <div class="panel" id="char-panel">
+      <div class="panel-title">Adventurer</div>
+      <div class="char-avatar" id="char-avatar">⚔️</div>
+      <div class="char-name" id="char-name">Hero</div>
+      <div class="char-class" id="char-class">Warrior</div>
+
+      <div class="stat-bar">
+        <div class="stat-label"><span>Health</span><span id="hp-val">100 / 100</span></div>
+        <div class="bar-bg"><div class="bar-fill hp-fill" id="hp-bar" style="width:100%"></div></div>
+      </div>
+      <div class="stat-bar">
+        <div class="stat-label"><span>Mana</span><span id="mp-val">50 / 50</span></div>
+        <div class="bar-bg"><div class="bar-fill mp-fill" id="mp-bar" style="width:100%"></div></div>
+      </div>
+      <div class="stat-bar">
+        <div class="stat-label"><span>Experience</span><span id="xp-val">0 / 100</span></div>
+        <div class="bar-bg"><div class="bar-fill xp-fill" id="xp-bar" style="width:0%"></div></div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-box"><div class="val" id="stat-str">10</div><div class="lbl">Strength</div></div>
+        <div class="stat-box"><div class="val" id="stat-def">5</div><div class="lbl">Defense</div></div>
+        <div class="stat-box"><div class="val" id="stat-spd">8</div><div class="lbl">Speed</div></div>
+        <div class="stat-box"><div class="val" id="stat-int">5</div><div class="lbl">Intellect</div></div>
+      </div>
+
+      <div class="stats-grid" style="margin-top:8px">
+        <div class="stat-box"><div class="val" id="stat-gold" style="color:var(--gold)">0</div><div class="lbl">Gold</div></div>
+        <div class="stat-box"><div class="val" id="stat-level">1</div><div class="lbl">Level</div></div>
+      </div>
+
+      <div class="inventory">
+        <div class="inv-title">Inventory</div>
+        <div class="inv-items" id="inventory"></div>
+      </div>
+    </div>
+
+    <!-- Story Panel -->
+    <div class="panel" id="story-panel">
+      <div class="panel-title">Chronicle</div>
+      <div id="story-log"></div>
+    </div>
+
+    <!-- Actions Panel -->
+    <div class="panel" id="actions-panel">
+      <div class="action-row" id="action-row-1"></div>
+      <div class="action-row" id="action-row-2"></div>
+    </div>
+  </div>
+</div>
+
+<!-- COMBAT OVERLAY -->
+<div id="combat-overlay">
+  <div class="combat-box">
+    <div class="combat-title" id="combat-title">⚔️ Battle!</div>
+    <div class="combatants">
+      <div class="combatant">
+        <span class="emo" id="c-player-emo">⚔️</span>
+        <div class="cname" id="c-player-name">Hero</div>
+        <div style="font-size:13px;color:var(--red);margin-top:4px" id="c-player-hp"></div>
+      </div>
+      <div class="combat-vs">VS</div>
+      <div class="combatant">
+        <span class="emo pulsing" id="c-enemy-emo">👹</span>
+        <div class="cname" id="c-enemy-name">Goblin</div>
+        <div style="font-size:13px;color:var(--red);margin-top:4px" id="c-enemy-hp"></div>
+      </div>
+    </div>
+    <div class="combat-log" id="combat-log"></div>
+    <div style="margin-bottom:10px">
+      <div class="stat-label"><span style="color:var(--text-dim);font-size:12px">YOUR HP</span><span id="combat-player-hp-display" style="color:var(--red)"></span></div>
+      <div class="bar-bg"><div class="bar-fill hp-fill" id="combat-hp-bar" style="width:100%"></div></div>
+    </div>
+    <div class="combat-actions" id="combat-actions"></div>
+  </div>
+</div>
+
+<!-- EVENT OVERLAY (death/level up) -->
+<div id="event-overlay">
+  <div class="event-box">
+    <span class="event-emoji" id="ev-emoji">💀</span>
+    <div class="event-title" id="ev-title">You Have Fallen</div>
+    <div class="event-desc" id="ev-desc"></div>
+    <button class="btn btn-primary" onclick="closeEvent()">Continue</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  GAME DATA
+// ═══════════════════════════════════════════════════════
+
+const CLASSES = {
+  warrior: { avatar:'⚔️', hp:120, mp:30, str:14, def:8, spd:7, int:4, label:'Warrior', skill:'Cleave', skillMp:8, skillDesc:'Strike for double damage' },
+  mage:    { avatar:'🔮', hp:70,  mp:80, str:7,  def:4, spd:6, int:16, label:'Mage',    skill:'Fireball', skillMp:15, skillDesc:'Blast for triple INT damage' },
+  rogue:   { avatar:'🗡️', hp:90,  mp:40, str:10, def:5, spd:14, int:7, label:'Rogue',   skill:'Shadow Strike', skillMp:10, skillDesc:'50% chance to hit twice' },
+};
+
+const ENEMIES = [
+  { name:'Goblin Scout',    emoji:'👺', hp:25,  str:6,  def:2, xp:20, gold:[2,8],   level:1 },
+  { name:'Forest Wolf',     emoji:'🐺', hp:35,  str:9,  def:3, xp:28, gold:[1,5],   level:1 },
+  { name:'Bandit',          emoji:'🗡️', hp:45,  str:11, def:5, xp:40, gold:[5,15],  level:2 },
+  { name:'Skeleton Archer', emoji:'💀', hp:40,  str:10, def:4, xp:45, gold:[3,10],  level:2 },
+  { name:'Troll',           emoji:'👹', hp:80,  str:15, def:7, xp:80, gold:[8,20],  level:3 },
+  { name:'Dark Knight',     emoji:'🛡️', hp:90,  str:18, def:12,xp:100,gold:[15,30], level:4 },
+  { name:'Vampire',         emoji:'🧛', hp:75,  str:20, def:8, xp:120,gold:[20,40], level:4 },
+  { name:'Dragon Wyrmling', emoji:'🐉', hp:130, str:25, def:14,xp:200,gold:[30,60], level:5 },
+  { name:'Lich',            emoji:'☠️', hp:120, str:22, def:10,xp:250,gold:[25,50], level:6 },
+  { name:'Ancient Dragon',  emoji:'🐲', hp:200, str:35, def:18,xp:500,gold:[80,150],level:8 },
+];
+
+const LOCATIONS = [
+  { name:'The Crossroads',         detail:'A fork in the ancient road',             danger:'Mild',     enemies:[0,1],     minLevel:1 },
+  { name:'Whispering Woods',       detail:'Gnarled trees hide lurking shadows',      danger:'Moderate', enemies:[1,2,3],   minLevel:1 },
+  { name:'Ruined Village',         detail:'Ash and silence fill the broken streets', danger:'Moderate', enemies:[2,3],     minLevel:2 },
+  { name:'The Bandit Road',        detail:'Highwaymen prey on lone travelers',       danger:'Dangerous',enemies:[2,3,4],   minLevel:2 },
+  { name:'Swamp of Sorrows',       detail:'Mist clings to the fetid water',         danger:'Dangerous',enemies:[3,4,5],   minLevel:3 },
+  { name:'Ashenveil Ruins',        detail:'Crumbling towers of the fallen kingdom', danger:'Deadly',   enemies:[4,5,6],   minLevel:4 },
+  { name:'Necromancer\'s Tower',   detail:'Dark energy pulses from the spire',      danger:'Deadly',   enemies:[5,6,8],   minLevel:5 },
+  { name:'Dragon\'s Peak',         detail:'Scorched stone, bones, and silence',     danger:'Extreme',  enemies:[7,8,9],   minLevel:6 },
+];
+
+const ITEMS = [
+  { name:'Health Potion 🧪', key:'hpotion', effect:'hp', val:30,  cost:15, desc:'Restore 30 HP' },
+  { name:'Mana Potion 💧',   key:'mpotion', effect:'mp', val:25,  cost:12, desc:'Restore 25 MP' },
+  { name:'Antidote 🌿',      key:'antidote', effect:'cure', val:0, cost:10, desc:'Cure poison' },
+];
+
+const EVENTS = [
+  { text:'You discover a weathered chest half-buried in the earth. It contains <em>{g} gold coins</em>!', type:'gold', val:[5,20] },
+  { text:'A wounded traveler thanks you and gifts you a <em>Health Potion</em>.', type:'item', val:'hpotion' },
+  { text:'You find strange herbs with healing properties. You gain <em>15 HP</em>.', type:'hp', val:15 },
+  { text:'Stepping on a hidden trap, you take <em>10 damage</em>. Pain sears through you.', type:'dmg', val:10 },
+  { text:'A merchant appears briefly to sell wares. <em>+1 Health Potion</em> added.', type:'item', val:'hpotion' },
+  { text:'You rest by a stream, meditating. Your mana is <em>fully restored</em>.', type:'mp_full', val:0 },
+  { text:'Strange runes glow on an ancient stone. You feel <em>enlightened</em>. +15 XP.', type:'xp', val:15 },
+  { text:'You find a <em>Mana Potion</em> tucked inside a hollow log.', type:'item', val:'mpotion' },
+];
+
+// ═══════════════════════════════════════════════════════
+//  GAME STATE
+// ═══════════════════════════════════════════════════════
+
+let G = {}; // game state
+let combat = null;
+let selectedClass = null;
+
+function selectClass(el) {
+  document.querySelectorAll('.class-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedClass = el.dataset.class;
+  document.getElementById('start-btn').disabled = false;
+}
+
+function startGame() {
+  const cls = CLASSES[selectedClass];
+  G = {
+    name: 'The Hero',
+    class: selectedClass,
+    level: 1,
+    hp: cls.hp, maxHp: cls.hp,
+    mp: cls.mp, maxMp: cls.mp,
+    str: cls.str, def: cls.def, spd: cls.spd, int: cls.int,
+    xp: 0, xpNext: 100,
+    gold: 10,
+    inventory: [],
+    location: 0,
+    turnCount: 0,
+    poisoned: false,
+  };
+  // Starting gear
+  G.inventory.push('hpotion');
+
+  document.getElementById('title-screen').style.display = 'none';
+  document.getElementById('game-screen').style.display = 'block';
+  updateCharPanel();
+  goLocation(0);
+  addStory('The Crossroads', `The road stretches endlessly before you. Wind carries whispers of <em>forgotten kingdoms</em> and ancient horrors. You tighten your grip on your weapon and press on. <em>Your journey begins.</em>`);
+  renderActions();
+}
+
+// ═══════════════════════════════════════════════════════
+//  UI UPDATES
+// ═══════════════════════════════════════════════════════
+
+function updateCharPanel() {
+  const cls = CLASSES[G.class];
+  document.getElementById('char-avatar').textContent = cls.avatar;
+  document.getElementById('char-name').textContent = G.name;
+  document.getElementById('char-class').textContent = `Level ${G.level} ${cls.label}`;
+  // HP
+  const hpPct = Math.max(0, G.hp / G.maxHp * 100);
+  document.getElementById('hp-val').textContent = `${Math.max(0,G.hp)} / ${G.maxHp}`;
+  document.getElementById('hp-bar').style.width = hpPct + '%';
+  // MP
+  const mpPct = G.mp / G.maxMp * 100;
+  document.getElementById('mp-val').textContent = `${G.mp} / ${G.maxMp}`;
+  document.getElementById('mp-bar').style.width = mpPct + '%';
+  // XP
+  const xpPct = G.xp / G.xpNext * 100;
+  document.getElementById('xp-val').textContent = `${G.xp} / ${G.xpNext}`;
+  document.getElementById('xp-bar').style.width = xpPct + '%';
+  // Stats
+  document.getElementById('stat-str').textContent = G.str;
+  document.getElementById('stat-def').textContent = G.def;
+  document.getElementById('stat-spd').textContent = G.spd;
+  document.getElementById('stat-int').textContent = G.int;
+  document.getElementById('stat-gold').textContent = G.gold;
+  document.getElementById('stat-level').textContent = G.level;
+  // Inventory
+  const inv = document.getElementById('inventory');
+  inv.innerHTML = '';
+  const counts = {};
+  G.inventory.forEach(k => counts[k] = (counts[k]||0) + 1);
+  Object.entries(counts).forEach(([k,n]) => {
+    const item = ITEMS.find(i => i.key === k);
+    if(!item) return;
+    const div = document.createElement('div');
+    div.className = 'inv-item';
+    div.textContent = item.name + (n > 1 ? ` x${n}` : '');
+    div.title = item.desc;
+    inv.appendChild(div);
+  });
+  if(G.inventory.length === 0) {
+    inv.innerHTML = '<span style="color:var(--text-dim);font-size:13px">Empty</span>';
+  }
+}
+
+function goLocation(idx) {
+  const loc = LOCATIONS[idx];
+  document.getElementById('loc-name').textContent = loc.name;
+  document.getElementById('loc-detail').textContent = loc.detail;
+  document.getElementById('loc-level').textContent = `⚔️ Danger: ${loc.danger}`;
+  G.location = idx;
+}
+
+function addStory(loc, text) {
+  const log = document.getElementById('story-log');
+  const entry = document.createElement('div');
+  entry.className = 'story-entry';
+  entry.innerHTML = `<div class="story-location">${loc}</div><div class="story-text">${text}</div>`;
+  log.appendChild(entry);
+  const panel = document.getElementById('story-panel');
+  setTimeout(() => panel.scrollTop = panel.scrollHeight, 50);
+}
+
+// ═══════════════════════════════════════════════════════
+//  ACTIONS
+// ═══════════════════════════════════════════════════════
+
+function renderActions() {
+  const r1 = document.getElementById('action-row-1');
+  const r2 = document.getElementById('action-row-2');
+  r1.innerHTML = '';
+  r2.innerHTML = '';
+
+  const btns1 = [
+    { label: '⚔️ Explore', cls: 'btn btn-primary', fn: 'doExplore()' },
+    { label: '🏕️ Rest', cls: 'btn', fn: 'doRest()' },
+    { label: '🗺️ Travel', cls: 'btn', fn: 'doTravel()' },
+  ];
+  const btns2 = [
+    { label: '🧪 Use Potion', cls: 'btn', fn: 'doUsePotion("hpotion")', disabled: !G.inventory.includes('hpotion') },
+    { label: '💧 Use Mana', cls: 'btn', fn: 'doUsePotion("mpotion")', disabled: !G.inventory.includes('mpotion') },
+  ];
+
+  btns1.forEach(b => {
+    const btn = document.createElement('button');
+    btn.className = b.cls;
+    btn.textContent = b.label;
+    btn.onclick = () => eval(b.fn);
+    if(b.disabled) btn.disabled = true;
+    r1.appendChild(btn);
+  });
+  btns2.forEach(b => {
+    const btn = document.createElement('button');
+    btn.className = b.cls;
+    btn.textContent = b.label;
+    btn.onclick = () => eval(b.fn);
+    if(b.disabled) btn.disabled = true;
+    r2.appendChild(btn);
+  });
+}
+
+function doExplore() {
+  G.turnCount++;
+  const loc = LOCATIONS[G.location];
+  const roll = Math.random();
+
+  if(roll < 0.55) {
+    // Fight!
+    const eligibleEnemies = loc.enemies.filter(i => ENEMIES[i].level <= G.level + 2);
+    const eIdx = eligibleEnemies[Math.floor(Math.random() * eligibleEnemies.length)];
+    startCombat(ENEMIES[eIdx]);
+  } else if(roll < 0.85) {
+    // Random event
+    const ev = EVENTS[Math.floor(Math.random() * EVENTS.length)];
+    let msg = ev.text;
+    if(ev.type === 'gold') {
+      const g = rand(ev.val[0], ev.val[1]);
+      G.gold += g;
+      msg = msg.replace('{g}', g);
+    } else if(ev.type === 'item') {
+      G.inventory.push(ev.val);
+    } else if(ev.type === 'hp') {
+      G.hp = Math.min(G.maxHp, G.hp + ev.val);
+    } else if(ev.type === 'dmg') {
+      G.hp -= ev.val;
+      if(G.hp <= 0) { updateCharPanel(); renderActions(); showDeath(); return; }
+    } else if(ev.type === 'mp_full') {
+      G.mp = G.maxMp;
+    } else if(ev.type === 'xp') {
+      gainXp(ev.val);
+    }
+    addStory(loc.name, msg);
+    updateCharPanel();
+    renderActions();
+  } else {
+    // Nothing
+    const msgs = [
+      'You move through the area cautiously. Nothing stirs. The silence is unnerving.',
+      'Shadows shift, but reveal nothing. You find no treasure, no foe — only the wind.',
+      'The path ahead is clear. You press on, nerves steady, blade ready.',
+    ];
+    addStory(loc.name, msgs[Math.floor(Math.random()*msgs.length)]);
+  }
+}
+
+function doRest() {
+  const heal = Math.floor(G.maxHp * 0.35);
+  const mana = Math.floor(G.maxMp * 0.40);
+  G.hp = Math.min(G.maxHp, G.hp + heal);
+  G.mp = Math.min(G.maxMp, G.mp + mana);
+  if(G.poisoned) { G.poisoned = false; }
+  addStory(LOCATIONS[G.location].name, `You find a safe spot to rest. The earth is cold but your wounds knit together. <em>+${heal} HP, +${mana} MP restored.</em>`);
+  updateCharPanel();
+  renderActions();
+}
+
+function doTravel() {
+  const accessible = LOCATIONS.filter((l, i) => i !== G.location && l.minLevel <= G.level + 1);
+  if(accessible.length === 0) { addStory('World', 'There is nowhere else to travel.'); return; }
+
+  // Show travel menu
+  const r1 = document.getElementById('action-row-1');
+  const r2 = document.getElementById('action-row-2');
+  r1.innerHTML = '<span style="color:var(--text-dim);font-size:14px;letter-spacing:1px;text-transform:uppercase;align-self:center;padding:4px 0">WHERE DO YOU TRAVEL?</span>';
+  r2.innerHTML = '';
+
+  accessible.forEach((loc, i) => {
+    const realIdx = LOCATIONS.indexOf(loc);
+    const btn = document.createElement('button');
+    btn.className = 'btn' + (realIdx === G.location ? ' btn-primary' : '');
+    btn.textContent = loc.name;
+    btn.onclick = () => {
+      goLocation(realIdx);
+      addStory(loc.name, `After a long journey, you arrive at <em>${loc.name}</em>. ${loc.detail}.`);
+      renderActions();
+    };
+    (i < 3 ? r1 : r2).appendChild(btn);
+  });
+
+  const back = document.createElement('button');
+  back.className = 'btn btn-danger';
+  back.textContent = '↩ Back';
+  back.onclick = renderActions;
+  r2.appendChild(back);
+}
+
+function doUsePotion(key) {
+  const idx = G.inventory.indexOf(key);
+  if(idx === -1) return;
+  G.inventory.splice(idx, 1);
+  const item = ITEMS.find(i => i.key === key);
+  if(item.effect === 'hp') {
+    const actual = Math.min(item.val, G.maxHp - G.hp);
+    G.hp = Math.min(G.maxHp, G.hp + item.val);
+    addStory(LOCATIONS[G.location].name, `You drink the <em>${item.name}</em>. Warmth spreads through your body. <span class="loot">+${actual} HP</span>.`);
+  } else if(item.effect === 'mp') {
+    const actual = Math.min(item.val, G.maxMp - G.mp);
+    G.mp = Math.min(G.maxMp, G.mp + item.val);
+    addStory(LOCATIONS[G.location].name, `You sip the <em>${item.name}</em>. Arcane energy hums within. <span class="magic">+${actual} MP</span>.`);
+  }
+  updateCharPanel();
+  renderActions();
+}
+
+// ═══════════════════════════════════════════════════════
+//  COMBAT SYSTEM
+// ═══════════════════════════════════════════════════════
+
+function startCombat(enemyTemplate) {
+  const cls = CLASSES[G.class];
+  combat = {
+    enemy: { ...enemyTemplate, maxHp: enemyTemplate.hp, hp: enemyTemplate.hp },
+    playerFleeTries: 0,
+  };
+
+  document.getElementById('c-player-emo').textContent = cls.avatar;
+  document.getElementById('c-player-name').textContent = G.name;
+  document.getElementById('c-enemy-emo').textContent = combat.enemy.emoji;
+  document.getElementById('c-enemy-name').textContent = combat.enemy.name;
+  document.getElementById('combat-title').textContent = `⚔️ Battle: ${combat.enemy.name}!`;
+  document.getElementById('combat-log').innerHTML = `A <em style="color:var(--gold)">${combat.enemy.name}</em> blocks your path and readies for battle!\n`;
+
+  updateCombatUI();
+  renderCombatActions();
+  document.getElementById('combat-overlay').classList.add('active');
+}
+
+function updateCombatUI() {
+  document.getElementById('c-player-hp').textContent = `HP: ${Math.max(0,G.hp)}/${G.maxHp}`;
+  document.getElementById('c-enemy-hp').textContent = `HP: ${Math.max(0,combat.enemy.hp)}/${combat.enemy.maxHp}`;
+  document.getElementById('combat-player-hp-display').textContent = `${Math.max(0,G.hp)} / ${G.maxHp}`;
+  document.getElementById('combat-hp-bar').style.width = Math.max(0,(G.hp/G.maxHp*100)) + '%';
+}
+
+function logCombat(msg) {
+  const log = document.getElementById('combat-log');
+  log.innerHTML += msg + '\n';
+  log.scrollTop = log.scrollHeight;
+}
+
+function renderCombatActions() {
+  const cls = CLASSES[G.class];
+  const actions = document.getElementById('combat-actions');
+  actions.innerHTML = '';
+
+  const btns = [
+    { label: '⚔️ Attack', fn: combatAttack },
+    { label: `✨ ${cls.skill} (${cls.skillMp}MP)`, fn: combatSkill, disabled: G.mp < cls.skillMp, cls:'btn-magic' },
+    { label: '🧪 Potion', fn: combatPotion, disabled: !G.inventory.includes('hpotion') },
+    { label: '🏃 Flee', fn: combatFlee },
+  ];
+
+  btns.forEach(b => {
+    const btn = document.createElement('button');
+    btn.className = 'btn ' + (b.cls || '');
+    btn.textContent = b.label;
+    btn.onclick = b.fn;
+    if(b.disabled) btn.disabled = true;
+    actions.appendChild(btn);
+  });
+}
+
+function disableCombatActions() {
+  document.querySelectorAll('#combat-actions .btn').forEach(b => b.disabled = true);
+}
+
+function combatAttack() {
+  disableCombatActions();
+  const dmg = Math.max(1, G.str + rand(-2, 3) - Math.floor(combat.enemy.def * 0.4));
+  combat.enemy.hp -= dmg;
+  logCombat(`<span class="combat-hit">You strike for ${dmg} damage!</span>`);
+  checkCombatEnd() || enemyTurn();
+}
+
+function combatSkill() {
+  const cls = CLASSES[G.class];
+  if(G.mp < cls.skillMp) return;
+  G.mp -= cls.skillMp;
+  disableCombatActions();
+
+  let dmg = 0;
+  if(G.class === 'warrior') {
+    dmg = Math.max(1, G.str * 2 + rand(0,4) - Math.floor(combat.enemy.def * 0.3));
+    logCombat(`<span class="magic">Cleave! You deal ${dmg} damage!</span>`);
+  } else if(G.class === 'mage') {
+    dmg = Math.max(1, G.int * 3 + rand(0,6));
+    logCombat(`<span class="magic">🔥 Fireball erupts for ${dmg} damage!</span>`);
+  } else if(G.class === 'rogue') {
+    const hit2 = Math.random() < 0.5;
+    dmg = Math.max(1, G.str + rand(0,5) - Math.floor(combat.enemy.def * 0.3));
+    logCombat(`<span class="magic">Shadow Strike! Hit for ${dmg} damage!</span>`);
+    if(hit2) {
+      const dmg2 = Math.max(1, G.str + rand(0,5) - Math.floor(combat.enemy.def * 0.3));
+      dmg += dmg2;
+      logCombat(`<span class="magic">Double strike! +${dmg2} more damage!</span>`);
+    }
+  }
+  combat.enemy.hp -= dmg;
+  updateCharPanel();
+  checkCombatEnd() || enemyTurn();
+}
+
+function combatPotion() {
+  const idx = G.inventory.indexOf('hpotion');
+  if(idx === -1) return;
+  G.inventory.splice(idx, 1);
+  const heal = Math.min(30, G.maxHp - G.hp);
+  G.hp += heal;
+  logCombat(`<span class="loot">You drink a Health Potion. +${heal} HP.</span>`);
+  updateCombatUI();
+  renderCombatActions();
+  enemyTurn();
+}
+
+function combatFlee() {
+  combat.playerFleeTries++;
+  const chance = 0.35 + (G.spd * 0.03);
+  if(Math.random() < chance) {
+    logCombat(`<span style="color:var(--text-dim)">You manage to flee!</span>`);
+    setTimeout(closeCombat, 1000);
+  } else {
+    logCombat(`<span class="combat-miss">You fail to escape!</span>`);
+    enemyTurn();
+  }
+}
+
+function enemyTurn() {
+  const e = combat.enemy;
+  if(e.hp <= 0) return;
+
+  setTimeout(() => {
+    const hit = Math.random() > (G.spd * 0.02);
+    if(hit) {
+      const dmg = Math.max(1, e.str + rand(-2,3) - Math.floor(G.def * 0.5));
+      G.hp -= dmg;
+      logCombat(`<span class="combat-hit">${e.name} hits you for ${dmg} damage!</span>`);
+    } else {
+      logCombat(`<span class="combat-miss">${e.name}'s attack misses!</span>`);
+    }
+    updateCombatUI();
+
+    if(G.hp <= 0) {
+      logCombat(`<span class="death">You have been slain...</span>`);
+      disableCombatActions();
+      setTimeout(() => {
+        document.getElementById('combat-overlay').classList.remove('active');
+        showDeath();
+      }, 1500);
+    } else {
+      renderCombatActions();
+    }
+  }, 600);
+}
+
+function checkCombatEnd() {
+  if(combat.enemy.hp <= 0) {
+    const e = combat.enemy;
+    const gold = rand(e.gold[0], e.gold[1]);
+    G.gold += gold;
+    const xpEarned = e.xp;
+    gainXp(xpEarned);
+
+    // Chance for potion drop
+    if(Math.random() < 0.25) G.inventory.push('hpotion');
+
+    logCombat(`<span class="loot">Victory! ${e.name} defeated! +${gold} gold, +${xpEarned} XP.</span>`);
+    disableCombatActions();
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'btn btn-primary';
+    closeBtn.textContent = '⚔️ Continue';
+    closeBtn.onclick = () => {
+      document.getElementById('combat-overlay').classList.remove('active');
+      const loc = LOCATIONS[G.location];
+      addStory(loc.name, `You defeat the <em>${e.name}</em>! It crumples before you. <span class="loot">+${gold} gold, +${xpEarned} XP gained.</span>`);
+      updateCharPanel();
+      renderActions();
+    };
+    document.getElementById('combat-actions').innerHTML = '';
+    document.getElementById('combat-actions').appendChild(closeBtn);
+    return true;
+  }
+  updateCombatUI();
+  return false;
+}
+
+function closeCombat() {
+  document.getElementById('combat-overlay').classList.remove('active');
+  const loc = LOCATIONS[G.location];
+  addStory(loc.name, `You narrowly escape, heart pounding. The creature's growl fades behind you.`);
+  updateCharPanel();
+  renderActions();
+}
+
+// ═══════════════════════════════════════════════════════
+//  LEVEL UP & DEATH
+// ═══════════════════════════════════════════════════════
+
+function gainXp(amount) {
+  G.xp += amount;
+  while(G.xp >= G.xpNext) {
+    G.xp -= G.xpNext;
+    G.level++;
+    G.xpNext = Math.floor(G.xpNext * 1.5);
+    // Stat gains
+    G.maxHp += 15;
+    G.hp = G.maxHp;
+    G.maxMp += 8;
+    G.mp = G.maxMp;
+    G.str += G.class === 'warrior' ? 3 : G.class === 'mage' ? 1 : 2;
+    G.def += G.class === 'warrior' ? 2 : 1;
+    G.int += G.class === 'mage' ? 3 : 1;
+    G.spd += G.class === 'rogue' ? 3 : 1;
+    showLevelUp();
+  }
+  updateCharPanel();
+}
+
+function showLevelUp() {
+  const ev = document.getElementById('event-overlay');
+  document.getElementById('ev-emoji').textContent = '⭐';
+  document.getElementById('ev-title').textContent = `Level ${G.level}!`;
+  document.getElementById('ev-title').className = 'event-title levelup';
+  document.getElementById('ev-desc').textContent = `You have grown stronger! Your maximum HP, MP, and combat abilities have increased. New dangers await.`;
+  ev.classList.add('active');
+}
+
+function showDeath() {
+  G.hp = Math.floor(G.maxHp * 0.3);
+  const ev = document.getElementById('event-overlay');
+  document.getElementById('ev-emoji').textContent = '💀';
+  document.getElementById('ev-title').textContent = 'You Have Fallen';
+  document.getElementById('ev-title').className = 'event-title death';
+  document.getElementById('ev-desc').textContent = `The darkness takes you... but fate is not yet done with you. You awaken battered and beaten, but alive. You lose half your gold.`;
+  G.gold = Math.floor(G.gold * 0.5);
+  ev.classList.add('active');
+}
+
+function closeEvent() {
+  document.getElementById('event-overlay').classList.remove('active');
+  const loc = LOCATIONS[G.location];
+  if(document.getElementById('ev-emoji').textContent === '💀') {
+    addStory(loc.name, `<span class="death">You wake with a gasp. Your wounds ache. You've lost much, but you still breathe. The journey continues...</span>`);
+  } else {
+    addStory(LOCATIONS[G.location].name, `<span class="magic">⭐ You have reached Level ${G.level}! Power courses through your veins.</span>`);
+  }
+  updateCharPanel();
+  renderActions();
+}
+
+// ═══════════════════════════════════════════════════════
+//  UTILITIES
+// ═══════════════════════════════════════════════════════
+
+function rand(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+</script>
+</body>
+</html>
